@@ -1,0 +1,62 @@
+import { Request, Response } from 'express';
+import catchAsync from '../../../shared/catchAsync';
+import sendResponse from '../../../shared/sendResponse';
+import { StatusCodes } from 'http-status-codes';
+import { PropertyService } from './property.service';
+
+const createProperty = catchAsync(async (req: Request, res: Response) => {
+  const result = await PropertyService.createPropertyToDB(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Property created successfully',
+    data: result,
+  });
+});
+const getPropertyById = catchAsync(async (req: Request, res: Response) => {
+  const result = await PropertyService.getPropertyByIdFromDB(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Property retrieved successfully',
+    data: result,
+  });
+});
+const getPropertyByOwnerId = catchAsync(async (req: Request, res: Response) => {
+
+
+
+
+
+
+
+    
+  const result = await PropertyService.getPropertyByOwnerIdFromDB(
+    req.params.ownerId
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Property retrieved successfully',
+    data: result,
+  });
+});
+const getAllProperties = catchAsync(async (req: Request, res: Response) => {
+  const result = await PropertyService.getAllPropertiesFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Properties retrieved successfully',
+    data: result,
+  });
+});
+export const PropertyController = {
+  createProperty,
+  getPropertyById,
+  getPropertyByOwnerId,
+  getAllProperties,
+};
