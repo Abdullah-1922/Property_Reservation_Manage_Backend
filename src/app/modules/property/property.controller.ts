@@ -25,14 +25,6 @@ const getPropertyById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getPropertyByOwnerId = catchAsync(async (req: Request, res: Response) => {
-
-
-
-
-
-
-
-    
   const result = await PropertyService.getPropertyByOwnerIdFromDB(
     req.params.ownerId
   );
@@ -54,9 +46,48 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getReservationsByOwnerId = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await PropertyService.getReservationsByOwnerId(
+      req.params.ownerId
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Reservations retrieved successfully',
+      data: result,
+    });
+  }
+);
+const getReservationsForAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await PropertyService.getReservationsForAdmin();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Reservations retrieved successfully',
+      data: result,
+    });
+  }
+);
+const getReservationsByRoomId = catchAsync( async (req: Request, res: Response) => {
+  const result = await PropertyService.getReservationsByRoomId(req.params.roomId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Reservations retrieved successfully',
+    data: result,
+  });
+});
 export const PropertyController = {
   createProperty,
   getPropertyById,
   getPropertyByOwnerId,
   getAllProperties,
+  getReservationsByOwnerId,
+  getReservationsForAdmin,
+  getReservationsByRoomId
 };

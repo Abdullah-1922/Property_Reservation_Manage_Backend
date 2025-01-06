@@ -13,11 +13,22 @@ router.post(
   PropertyController.createProperty
 );
 router.get('/', auth(USER_ROLES.ADMIN), PropertyController.getAllProperties);
-router.get('/:id', auth(USER_ROLES.ADMIN), PropertyController.getPropertyById);
+router.get(
+  '/reservation/owner/:ownerId',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  PropertyController.getReservationsByOwnerId
+);
+router.get("/reservation/room/:roomId", auth(USER_ROLES.USER, USER_ROLES.ADMIN), PropertyController.getReservationsByRoomId);
+router.get(
+  '/reservation/admin',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  PropertyController.getReservationsForAdmin
+);
 router.get(
   '/owner/:ownerId',
   auth(USER_ROLES.USER, USER_ROLES.ADMIN),
   PropertyController.getPropertyByOwnerId
 );
+router.get('/:id', auth(USER_ROLES.ADMIN), PropertyController.getPropertyById);
 
 export const PropertyRoutes = router;
