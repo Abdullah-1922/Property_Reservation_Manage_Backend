@@ -25,7 +25,7 @@ const getPropertyById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getPropertyByOwnerId = catchAsync(async (req: Request, res: Response) => {
-  const result = await PropertyService.getPropertyByOwnerIdFromDB(
+  const result = await PropertyService.getPropertyByOwnerId(
     req.params.ownerId
   );
 
@@ -37,7 +37,7 @@ const getPropertyByOwnerId = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllProperties = catchAsync(async (req: Request, res: Response) => {
-  const result = await PropertyService.getAllPropertiesFromDB();
+  const result = await PropertyService.getAllRooms();
 
   sendResponse(res, {
     success: true,
@@ -48,8 +48,15 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
 });
 const getReservationsByOwnerId = catchAsync(
   async (req: Request, res: Response) => {
+const query= {
+  startDate: req.query.startDate as string,
+  endDate: req.query.endDate as string,
+  offset: Number(req.query.offset) ,
+}
+
     const result = await PropertyService.getReservationsByOwnerId(
-      req.params.ownerId
+      req.params.ownerId,
+      query
     );
 
     sendResponse(res, {
@@ -62,8 +69,14 @@ const getReservationsByOwnerId = catchAsync(
 );
 const getReservationsForAdmin = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await PropertyService.getReservationsForAdmin();
-
+    const query= {
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+      offset: Number(req.query.offset) ,
+    }
+    
+    const result = await PropertyService.getReservationsForAdmin(query);
+     
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
@@ -73,7 +86,13 @@ const getReservationsForAdmin = catchAsync(
   }
 );
 const getReservationsByRoomId = catchAsync( async (req: Request, res: Response) => {
-  const result = await PropertyService.getReservationsByRoomId(req.params.roomId);
+  const query= {
+    startDate: req.query.startDate as string,
+    endDate: req.query.endDate as string,
+    offset: Number(req.query.offset) ,
+  }
+  
+  const result = await PropertyService.getReservationsByRoomId(req.params.roomId, query);
 
   sendResponse(res, {
     success: true,
