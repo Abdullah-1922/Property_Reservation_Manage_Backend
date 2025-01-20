@@ -13,6 +13,7 @@ const updateZodSchema = z.object({
   name: z.string().optional(),
   image: z.string().optional(),
   password: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 export const UserValidation = {

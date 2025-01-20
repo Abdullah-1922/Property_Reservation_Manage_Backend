@@ -7,6 +7,7 @@ export type TUser = {
   email: string;
   password: string;
   image: string;
+  phone?: string;
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;

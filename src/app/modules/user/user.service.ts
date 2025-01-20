@@ -40,11 +40,9 @@ const updateProfileToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  
   if (payload.image && isExistUser.image) {
     unlinkFile(isExistUser.image);
   }
-
   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
     new: true,
   });
@@ -60,9 +58,9 @@ const getSingleUser = async (id: string): Promise<TUser | null> => {
 //get all users
 const getAllUsers = async (): Promise<TUser[]> => {
   const result = await User.find();
+
   return result;
 };
-
 
 export const UserService = {
   getUserProfileFromDB,
@@ -70,5 +68,4 @@ export const UserService = {
   getSingleUser,
   createUserToDB,
   getAllUsers,
-
 };

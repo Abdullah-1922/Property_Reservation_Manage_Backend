@@ -37,7 +37,7 @@ const getPropertyByOwnerId = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllProperties = catchAsync(async (req: Request, res: Response) => {
-  const result = await PropertyService.getAllRooms();
+  const result = await PropertyService.getAllProperties();
 
   sendResponse(res, {
     success: true,
@@ -101,6 +101,8 @@ const getReservationsByRoomId = catchAsync( async (req: Request, res: Response) 
     data: result,
   });
 });
+
+
 export const PropertyController = {
   createProperty,
   getPropertyById,

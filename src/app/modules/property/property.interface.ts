@@ -4,6 +4,7 @@ export type TProperty = {
     _id:string;
     owner:Types.ObjectId;
     zakRoomId:string;
+    roomName:string;
 }
 
 export type TReservation = {

@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //file retrieve
 app.use(express.static('uploads'));
-
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 //router
 app.use('/api/v1', router);
 

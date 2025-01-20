@@ -44,10 +44,9 @@ const updateProfile = catchAsync(
 
     const value = {
       image,
+
       ...req.body,
     };
-
-    console.log(value);
 
     const result = await UserService.updateProfileToDB(user, value);
 

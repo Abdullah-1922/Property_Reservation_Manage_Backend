@@ -115,6 +115,8 @@ const getReservationsByOwnerId = async (
             return {
               ...reservation,
               customerName: customer?.data?.main_info?.name,
+              customerSurName: customer?.data?.main_info?.surname,
+              customerPhone: customer?.data?.main_info?.phone || 'Unknown',
               notes: notes?.data,
             };
           }) ?? []
@@ -169,6 +171,8 @@ const getReservationsForAdmin = async (query: {
             return {
               ...reservation,
               customerName: customer?.data?.main_info?.name,
+              customerSurName: customer?.data?.main_info?.surname,
+              customerPhone: customer?.data?.main_info?.phone || 'Unknown',
               notes: notes?.data,
             };
           }) ?? []
@@ -224,6 +228,8 @@ const getReservationsByRoomId = async (
       return {
         ...reservation,
         customerName: customer?.data?.main_info?.name,
+        customerSurName: customer?.data?.main_info?.surname,
+        customerPhone: customer?.data?.main_info?.phone || 'Unknown',
         notes: notes?.data,
       };
     }) ?? []
@@ -237,9 +243,10 @@ const getReservationsByRoomId = async (
 
 const createPropertyToDB = async (payload: Partial<TProperty>) => {
   const { owner, zakRoomId } = payload;
-  const [isExistProperty, isUserExist] = await Promise.all([
+  const [isExistProperty, isUserExist, allRooms] = await Promise.all([
     Property.findOne({ zakRoomId }),
     User.findById(owner),
+    getAllRooms(),
   ]);
 
   if (isExistProperty) {
@@ -249,16 +256,25 @@ const createPropertyToDB = async (payload: Partial<TProperty>) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'User does not exist');
   }
 
-  const property = await Property.create(payload);
-  console.log(property);
+  const room = allRooms?.data?.find(
+    (room: any) => room.id?.toString() === zakRoomId
+  );
+  if (!room) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Room not found');
+  }
+
+  const property = await Property.create({ ...payload, roomName: room.name });
+
   return property;
 };
 
-const getPropertyByIdFromDB = async (id: string) => Property.findById(id);
+const getPropertyByIdFromDB = async (id: string) =>
+  Property.findById(id).populate('owner');
 
 const getPropertyByOwnerId = async (id: string) => {
   return Property.find({ owner: id });
 };
+const getAllProperties = async () => Property.find().populate('owner');
 
 export const PropertyService = {
   getReservationsByOwnerId,
@@ -268,4 +284,5 @@ export const PropertyService = {
   getPropertyByIdFromDB,
   getAllRooms,
   getPropertyByOwnerId,
+  getAllProperties,
 };

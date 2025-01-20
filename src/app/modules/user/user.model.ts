@@ -27,6 +27,9 @@ const userSchema = new Schema<TUser, UserModal>(
       unique: true,
       lowercase: true,
     },
+    phone: {
+      type: String,
+    },
     password: {
       type: String,
       required: true,

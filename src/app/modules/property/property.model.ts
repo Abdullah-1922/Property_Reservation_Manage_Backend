@@ -6,6 +6,7 @@ const propertySchema = new Schema<TProperty>({
 
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     zakRoomId: { type: String, required: true ,unique: true,index: true},
+    roomName: { type: String, required: true },
 });
 
 const Property = model<TProperty>('Property', propertySchema);
