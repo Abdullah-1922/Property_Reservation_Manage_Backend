@@ -14,7 +14,7 @@ const auth =
         throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
       }
 
-
+     console.log(tokenWithBearer);
       if (tokenWithBearer && tokenWithBearer.startsWith('Bearer')) {
         const token = tokenWithBearer.split(' ')[1];
 

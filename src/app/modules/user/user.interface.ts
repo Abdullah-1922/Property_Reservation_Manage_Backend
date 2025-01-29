@@ -1,5 +1,6 @@
 import { Model, Types } from 'mongoose';
 import { USER_ROLES } from '../../../enums/user';
+import { TProperty } from '../property/property.interface';
 
 export type TUser = {
   role: USER_ROLES;
@@ -16,6 +17,7 @@ export type TUser = {
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
+  property?:TProperty[];
 };
 
 export type UserModal = {

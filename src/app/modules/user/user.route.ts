@@ -32,9 +32,10 @@ router.put(
   '/update-profile',
   fileUploadHandler(),
   auth(USER_ROLES.ADMIN, USER_ROLES.USER),
-
+  
   (req: Request, res: Response, next: NextFunction) => {
-    if (req.body.data) {
+    if (req.body) {
+    
       req.body = UserValidation.updateZodSchema.parse(
         JSON.parse(req.body.data)
       );

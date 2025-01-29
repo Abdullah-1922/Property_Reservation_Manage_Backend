@@ -2,11 +2,46 @@ import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../../errors/ApiError';
 import Property from './property.model';
 import config from '../../../config';
-import { TProperty } from './property.interface';
+import { TProperty, TReservation } from './property.interface';
 import { User } from '../user/user.model';
 
+
+
+
+function sortReservationsByDates(reservations: TReservation[], targetRoomId: number): TReservation[] {
+  // Filter the reservations to only include those with the target room_id
+  const filteredReservations = reservations.filter(reservation =>
+    reservation.rooms.some(room => room.id_zak_room === targetRoomId)
+  );
+
+  return filteredReservations.sort((a, b) => {
+    // Check if the reservation is canceled
+    const aIsCancelled = a.status === "Cancelled";
+    const bIsCancelled = b.status === "Cancelled";
+    
+    // Keep non-canceled reservations at the top and move canceled reservations to the end
+    if (aIsCancelled && !bIsCancelled) return 1; 
+    if (!aIsCancelled && bIsCancelled) return -1;
+
+    // If both or neither are canceled, proceed with sorting based on dates
+    const aDfrom = new Date(a.rooms[0].dfrom.split("/").reverse().join("-")); // Convert dfrom to Date
+    const bDfrom = new Date(b.rooms[0].dfrom.split("/").reverse().join("-")); // Convert dfrom to Date
+    const aDto = new Date(a.rooms[0].dto.split("/").reverse().join("-"));   // Convert dto to Date
+    const bDto = new Date(b.rooms[0].dto.split("/").reverse().join("-"));   // Convert dto to Date
+
+    // First, sort by 'dfrom' (arrival date) in ascending order (earlier dates first)
+    if (aDfrom < bDfrom) return -1;
+    if (aDfrom > bDfrom) return 1;
+
+    // If 'dfrom' values are the same, sort by 'dto' (departure date) in ascending order (earlier dates first)
+    if (aDto < bDto) return -1;
+    if (aDto > bDto) return 1;
+
+    return 0;
+  });
+}
 const fetchFromApi = async (url: string, body?: URLSearchParams) => {
-  console.log(url, body);
+  console.log('hello world', url, body);
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -56,6 +91,47 @@ const getAllReservations = async (
     pager: { limit: 64, offset: 0 },
   }
 ) => {
+  if (filters.departure && filters.arrival) {
+    const departureToDate = new Date(
+      filters.departure.to.split('/').reverse().join('-')
+    );
+    filters.departure.to = new Date(
+      departureToDate.getFullYear(),
+      departureToDate.getMonth() + 2,
+      0
+    ).toLocaleDateString('en-GB');
+    console.log(filters.departure.to);
+    const departureFromDate = new Date(
+      filters.departure.to.split('/').reverse().join('-')
+    );
+    filters.departure.from = new Date(
+      departureFromDate.getFullYear(),
+      departureFromDate.getMonth() - 1,
+      0
+    ).toLocaleDateString('en-GB');
+    const arrivalToDate = new Date(
+      filters.arrival.to.split('/').reverse().join('-')
+    );
+    filters.arrival.to = new Date(
+      arrivalToDate.getFullYear(),
+      arrivalToDate.getMonth() + 2,
+      0
+    ).toLocaleDateString('en-GB');
+
+    const arrivalFromDate = new Date(
+      filters.arrival.to.split('/').reverse().join('-')
+    );
+    filters.arrival.from = new Date(
+      arrivalFromDate.getFullYear(),
+      arrivalFromDate.getMonth() - 2,
+      0
+    ).toLocaleDateString('en-GB');
+  }
+  // if(filters.pager){
+  //   filters.pager.offset =  0 ;
+
+  // }
+  console.log('filters', filters);
   return fetchFromApi(
     'https://kapi.wubook.net/kp/reservations/fetch_reservations',
     new URLSearchParams({ filters: JSON.stringify(filters) })
@@ -78,6 +154,9 @@ const getReservationsByOwnerId = async (
   ownerId: string,
   query: { startDate: string; endDate: string; offset: number }
 ) => {
+  const data = await getAllRooms();
+  // console.log(data);
+  // return data;
   const [properties, allRooms, reservations] = await Promise.all([
     Property.find({ owner: ownerId }).select('zakRoomId'),
     getAllRooms(),
@@ -85,7 +164,7 @@ const getReservationsByOwnerId = async (
     getAllReservations({
       arrival: { from: query.startDate, to: query.endDate },
       departure: { from: query.startDate, to: query.endDate },
-      pager: { limit: 64, offset: query.offset },
+      pager: { limit: 128, offset: query.offset },
     }),
   ]);
 
@@ -114,8 +193,8 @@ const getReservationsByOwnerId = async (
             ]);
             return {
               ...reservation,
-              customerName: customer?.data?.main_info?.name,
-              customerSurName: customer?.data?.main_info?.surname,
+              customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
+
               customerPhone: customer?.data?.main_info?.phone || 'Unknown',
               notes: notes?.data,
             };
@@ -146,7 +225,7 @@ const getReservationsForAdmin = async (query: {
     getAllReservations({
       arrival: { from: query.startDate, to: query.endDate },
       departure: { from: query.startDate, to: query.endDate },
-      pager: { limit: 64, offset: query.offset },
+      pager: { limit: 64, offset: query.offset || 0 },
     }),
   ]);
 
@@ -170,8 +249,8 @@ const getReservationsForAdmin = async (query: {
 
             return {
               ...reservation,
-              customerName: customer?.data?.main_info?.name,
-              customerSurName: customer?.data?.main_info?.surname,
+              customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
+
               customerPhone: customer?.data?.main_info?.phone || 'Unknown',
               notes: notes?.data,
             };
@@ -195,6 +274,7 @@ const getReservationsByRoomId = async (
   query: { startDate: string; endDate: string; offset: number }
 ) => {
   const roomRes = await Property.findById(room_id).select('zakRoomId');
+
   const roomId = roomRes?.zakRoomId;
   const allRooms = await getAllRooms();
   const room = allRooms?.data?.find(
@@ -204,15 +284,33 @@ const getReservationsByRoomId = async (
   if (!room) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Room not found');
   }
-
+  const finalReservation = [];
   const reservations = await getAllReservations({
     arrival: { from: query.startDate, to: query.endDate },
     departure: { from: query.startDate, to: query.endDate },
-    pager: { limit: 64, offset: query.offset },
+    pager: { limit: 64, offset: query.offset || 0 },
   });
   const allReservations = reservations?.data?.reservations;
-
-  const roomReservations = allReservations?.filter((reservation: any) =>
+  console.log(allReservations.length);
+  finalReservation.push(...allReservations);
+  if (allReservations.length === 64) {
+    const reservations2 = await getAllReservations({
+      arrival: { from: query.startDate, to: query.endDate },
+      departure: { from: query.startDate, to: query.endDate },
+      pager: { limit: 64, offset: query.offset ? query.offset + 64 : 64 },
+    });
+    finalReservation.push(...reservations2?.data?.reservations);
+  }
+  if (allReservations.length === 128) {
+    const reservations3 = await getAllReservations({
+      arrival: { from: query.startDate, to: query.endDate },
+      departure: { from: query.startDate, to: query.endDate },
+      pager: { limit: 64, offset: 128 },
+    });
+    finalReservation.push(...reservations3?.data?.reservations);
+  }
+  console.log(finalReservation.length);
+  const roomReservations = finalReservation?.filter((reservation: any) =>
     reservation.rooms?.some(
       (room: any) => room.id_zak_room?.toString() === roomId
     )
@@ -227,30 +325,34 @@ const getReservationsByRoomId = async (
 
       return {
         ...reservation,
-        customerName: customer?.data?.main_info?.name,
-        customerSurName: customer?.data?.main_info?.surname,
+        customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
+
         customerPhone: customer?.data?.main_info?.phone || 'Unknown',
         notes: notes?.data,
       };
     }) ?? []
   );
 
+  const sortedReservations = sortReservationsByDates(detailedReservations, parseInt(roomId!));
   return {
     roomName: room.name,
-    reservations: detailedReservations,
+    room_id: room.id,
+    reservations: sortedReservations,
   };
 };
 
 const createPropertyToDB = async (payload: Partial<TProperty>) => {
   const { owner, zakRoomId } = payload;
-  const [isExistProperty, isUserExist, allRooms] = await Promise.all([
-    Property.findOne({ zakRoomId }),
+  const [isUserExist, allRooms] = await Promise.all([
     User.findById(owner),
     getAllRooms(),
   ]);
-
-  if (isExistProperty) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property already exist');
+  const isAlreadyOwner = await Property.findOne({ owner, zakRoomId });
+  if (isAlreadyOwner) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `${isUserExist?.name} already own this property`
+    );
   }
   if (!isUserExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'User does not exist');
@@ -272,8 +374,27 @@ const getPropertyByIdFromDB = async (id: string) =>
   Property.findById(id).populate('owner');
 
 const getPropertyByOwnerId = async (id: string) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  if (user.role == 'admin') {
+    const properties = await Property.find({});
+    console.log(properties?.length);
+    const uniqueProperties = properties.reduce((acc: TProperty[], property) => {
+      if (!acc.some((p: any) => p.zakRoomId === property.zakRoomId)) {
+        acc.push(property);
+      }
+      return acc;
+    }, []);
+    console.log(uniqueProperties?.length);
+    return uniqueProperties;
+  }
+
   return Property.find({ owner: id });
 };
+
 const getAllProperties = async () => Property.find().populate('owner');
 
 export const PropertyService = {

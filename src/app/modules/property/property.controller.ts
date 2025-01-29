@@ -101,6 +101,15 @@ const getReservationsByRoomId = catchAsync( async (req: Request, res: Response) 
     data: result,
   });
 });
+const getAllRooms = catchAsync( async (req: Request, res: Response) => {
+  const result = await PropertyService.getAllRooms();
+  sendResponse(res, {
+   success: true,
+   statusCode: StatusCodes.OK,
+   message: 'Rooms from zak retrieved successfully',
+   data: result,
+ });
+});
 
 
 export const PropertyController = {
@@ -110,5 +119,6 @@ export const PropertyController = {
   getAllProperties,
   getReservationsByOwnerId,
   getReservationsForAdmin,
-  getReservationsByRoomId
+  getReservationsByRoomId,
+  getAllRooms
 };

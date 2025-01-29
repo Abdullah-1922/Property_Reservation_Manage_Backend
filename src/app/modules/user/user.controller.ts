@@ -47,6 +47,7 @@ const updateProfile = catchAsync(
 
       ...req.body,
     };
+    console.log(value);
 
     const result = await UserService.updateProfileToDB(user, value);
 

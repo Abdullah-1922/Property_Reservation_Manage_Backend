@@ -4,6 +4,7 @@ import ApiError from '../../../errors/ApiError';
 import { TUser } from './user.interface';
 import { User } from './user.model';
 import unlinkFile from '../../../shared/unlinkFile';
+import Property from '../property/property.model';
 
 const createUserToDB = async (payload: Partial<TUser>) => {
   // Validate required fields
@@ -35,6 +36,7 @@ const updateProfileToDB = async (
   payload: Partial<TUser>
 ): Promise<Partial<TUser | null>> => {
   const { id } = user;
+  console.log(payload);
   const isExistUser = await User.isExistUserById(id);
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
@@ -57,9 +59,13 @@ const getSingleUser = async (id: string): Promise<TUser | null> => {
 
 //get all users
 const getAllUsers = async (): Promise<TUser[]> => {
-  const result = await User.find();
+  const [property, users] = await Promise.all([Property.find(), User.find()]);
 
-  return result;
+  users.forEach((user) => {
+    user.property = property.filter((p) => p.owner === user._id);
+  });
+
+  return users;
 };
 
 export const UserService = {

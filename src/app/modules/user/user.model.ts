@@ -20,6 +20,8 @@ const userSchema = new Schema<TUser, UserModal>(
     },
     image: {
       type: String,
+      default:
+        '/images/default_profile/default_profile.jpg',
     },
     email: {
       type: String,

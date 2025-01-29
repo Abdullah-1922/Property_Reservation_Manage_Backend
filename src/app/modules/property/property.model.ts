@@ -5,7 +5,7 @@ import { TProperty } from './property.interface';
 const propertySchema = new Schema<TProperty>({
 
     owner: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-    zakRoomId: { type: String, required: true ,unique: true,index: true},
+    zakRoomId: { type: String, required: true },
     roomName: { type: String, required: true },
 });
 

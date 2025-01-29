@@ -29,6 +29,7 @@ router.get(
   auth(USER_ROLES.USER, USER_ROLES.ADMIN),
   PropertyController.getPropertyByOwnerId
 );
+router.get('/zak-rooms',PropertyController.getAllRooms);
 router.get('/:id', auth(USER_ROLES.ADMIN), PropertyController.getPropertyById);
 
 export const PropertyRoutes = router;

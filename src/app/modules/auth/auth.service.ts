@@ -93,6 +93,7 @@ const forgetPasswordToDB = async (email: string) => {
 
 //verify email
 const verifyEmailToDB = async (payload: IVerifyEmail) => {
+  console.log(payload);
   const { email, oneTimeCode } = payload;
   const isExistUser = await User.findOne({ email }).select('+authentication');
   if (!isExistUser) {
