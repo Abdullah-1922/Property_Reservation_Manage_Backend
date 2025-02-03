@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
+import { ObjectId } from 'mongodb';
 import { TUser } from './user.interface';
 import { User } from './user.model';
 import unlinkFile from '../../../shared/unlinkFile';
@@ -42,7 +43,9 @@ const updateProfileToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  if (payload.image && isExistUser.image) {
+
+  
+  if (payload.image && isExistUser.image && !isExistUser.image.includes("default_profile.jpg")) {
     unlinkFile(isExistUser.image);
   }
   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
@@ -59,14 +62,19 @@ const getSingleUser = async (id: string): Promise<TUser | null> => {
 
 //get all users
 const getAllUsers = async (): Promise<TUser[]> => {
-  const [property, users] = await Promise.all([Property.find(), User.find()]);
+  const users = await User.find();
+  const property = await Property.find();
 
-  users.forEach((user) => {
-    user.property = property.filter((p) => p.owner === user._id);
+  const usersWithProperty = users.map((user) => {
+    const userProperties = property
+      .filter((p) => new ObjectId(p.owner).equals(user._id))
+      .map((p) => p.roomName);
+    return { ...user.toObject(), property: userProperties };
   });
 
-  return users;
+  return usersWithProperty;
 };
+
 
 export const UserService = {
   getUserProfileFromDB,

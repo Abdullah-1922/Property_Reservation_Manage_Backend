@@ -17,7 +17,7 @@ export type TUser = {
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
-  property?:TProperty[];
+  property?:string[];
 };
 
 export type UserModal = {
