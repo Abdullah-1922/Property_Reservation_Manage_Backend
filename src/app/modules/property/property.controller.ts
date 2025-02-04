@@ -25,9 +25,7 @@ const getPropertyById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getPropertyByOwnerId = catchAsync(async (req: Request, res: Response) => {
-  const result = await PropertyService.getPropertyByOwnerId(
-    req.params.ownerId
-  );
+  const result = await PropertyService.getPropertyByOwnerId(req.params.ownerId);
 
   sendResponse(res, {
     success: true,
@@ -48,11 +46,11 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
 });
 const getReservationsByOwnerId = catchAsync(
   async (req: Request, res: Response) => {
-const query= {
-  startDate: req.query.startDate as string,
-  endDate: req.query.endDate as string,
-  offset: Number(req.query.offset) ,
-}
+    const query = {
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+      offset: Number(req.query.offset),
+    };
 
     const result = await PropertyService.getReservationsByOwnerId(
       req.params.ownerId,
@@ -69,14 +67,14 @@ const query= {
 );
 const getReservationsForAdmin = catchAsync(
   async (req: Request, res: Response) => {
-    const query= {
+    const query = {
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      offset: Number(req.query.offset) ,
-    }
-    
+      offset: Number(req.query.offset),
+    };
+
     const result = await PropertyService.getReservationsForAdmin(query);
-     
+
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
@@ -85,32 +83,57 @@ const getReservationsForAdmin = catchAsync(
     });
   }
 );
-const getReservationsByRoomId = catchAsync( async (req: Request, res: Response) => {
-  const query= {
-    startDate: req.query.startDate as string,
-    endDate: req.query.endDate as string,
-    offset: Number(req.query.offset) ,
-  }
-  
-  const result = await PropertyService.getReservationsByRoomId(req.params.roomId, query);
+const getReservationsByRoomId = catchAsync(
+  async (req: Request, res: Response) => {
+    const query = {
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+      offset: Number(req.query.offset),
+    };
 
+    const result = await PropertyService.getReservationsByRoomId(
+      req.params.roomId,
+      query
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Reservations retrieved successfully',
+      data: result,
+    });
+  }
+);
+const getReservationsByRoomIdByCreatedTime = catchAsync(
+  async (req: Request, res: Response) => {
+    const query = {
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+      offset: Number(req.query.offset),
+    };
+
+    const result = await PropertyService.getReservationsByRoomIdByCreatedTime(
+      req.params.roomId,
+      query
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Reservations retrieved successfully (by created time)',
+      data: result,
+    });
+  }
+);
+const getAllRooms = catchAsync(async (req: Request, res: Response) => {
+  const result = await PropertyService.getAllRooms();
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Reservations retrieved successfully',
+    message: 'Rooms from zak retrieved successfully',
     data: result,
   });
 });
-const getAllRooms = catchAsync( async (req: Request, res: Response) => {
-  const result = await PropertyService.getAllRooms();
-  sendResponse(res, {
-   success: true,
-   statusCode: StatusCodes.OK,
-   message: 'Rooms from zak retrieved successfully',
-   data: result,
- });
-});
-
 
 export const PropertyController = {
   createProperty,
@@ -120,5 +143,6 @@ export const PropertyController = {
   getReservationsByOwnerId,
   getReservationsForAdmin,
   getReservationsByRoomId,
-  getAllRooms
+  getAllRooms,
+  getReservationsByRoomIdByCreatedTime
 };

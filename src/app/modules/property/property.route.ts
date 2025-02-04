@@ -18,6 +18,9 @@ router.get(
   auth(USER_ROLES.USER, USER_ROLES.ADMIN),
   PropertyController.getReservationsByOwnerId
 );
+// get reservations by room id (by created time)
+router.get("/reservation/room/log/:roomId", auth(USER_ROLES.USER, USER_ROLES.ADMIN), PropertyController.getReservationsByRoomIdByCreatedTime);
+// get reservations by room id
 router.get("/reservation/room/:roomId", auth(USER_ROLES.USER, USER_ROLES.ADMIN), PropertyController.getReservationsByRoomId);
 router.get(
   '/reservation/admin',

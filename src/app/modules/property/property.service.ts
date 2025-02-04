@@ -4,43 +4,16 @@ import Property from './property.model';
 import config from '../../../config';
 import { TProperty, TReservation } from './property.interface';
 import { User } from '../user/user.model';
+import {
+  sortReservationsByCreatedBy,
+  sortReservationsByDates,
+} from './property.utils';
 
-function sortReservationsByDates(
-  reservations: TReservation[],
-  targetRoomId: number
-): TReservation[] {
-  // Filter the reservations to only include those with the target room_id
-  const filteredReservations = reservations.filter(reservation =>
-    reservation.rooms.some(room => room.id_zak_room === targetRoomId)
-  );
+////////////////////////////////
 
-  return filteredReservations.sort((a, b) => {
-    // Check if the reservation is canceled
-    const aIsCancelled = a.status === 'Cancelled';
-    const bIsCancelled = b.status === 'Cancelled';
-
-    // Keep non-canceled reservations at the top and move canceled reservations to the end
-    if (aIsCancelled && !bIsCancelled) return 1;
-    if (!aIsCancelled && bIsCancelled) return -1;
-
-    // If both or neither are canceled, proceed with sorting based on dates
-    const aDfrom = new Date(a.rooms[0].dfrom.split('/').reverse().join('-')); // Convert dfrom to Date
-    const bDfrom = new Date(b.rooms[0].dfrom.split('/').reverse().join('-')); // Convert dfrom to Date
-    const aDto = new Date(a.rooms[0].dto.split('/').reverse().join('-')); // Convert dto to Date
-    const bDto = new Date(b.rooms[0].dto.split('/').reverse().join('-')); // Convert dto to Date
-
-    // First, sort by 'dfrom' (arrival date) in ascending order (earlier dates first)
-    if (aDfrom < bDfrom) return -1;
-    if (aDfrom > bDfrom) return 1;
-
-    // If 'dfrom' values are the same, sort by 'dto' (departure date) in ascending order (earlier dates first)
-    if (aDto < bDto) return -1;
-    if (aDto > bDto) return 1;
-
-    return 0;
-  });
-}
+/////////////////////////////////
 const fetchFromApi = async (url: string, body?: URLSearchParams) => {
+  console.log(url);
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -99,7 +72,7 @@ const getAllReservations = async (
       departureToDate.getMonth() + 3,
       0
     ).toLocaleDateString('en-GB');
-  
+
     const departureFromDate = new Date(
       filters.departure.from.split('/').reverse().join('-')
     );
@@ -122,17 +95,65 @@ const getAllReservations = async (
     );
     filters.arrival.from = new Date(
       arrivalFromDate.getFullYear(),
-      arrivalFromDate.getMonth() - 1,
+      arrivalFromDate.getMonth() - 2,
       0
     ).toLocaleDateString('en-GB');
   }
- console.log(filters);
+  console.log(filters);
   return fetchFromApi(
     'https://kapi.wubook.net/kp/reservations/fetch_reservations',
     new URLSearchParams({ filters: JSON.stringify(filters) })
   );
 };
 
+////////////////////////
+const getAllReservationByCreatedTime = async (
+  filters: {
+    created?: { from: string; to: string };
+    pager?: { limit: number; offset: number };
+  } = {
+    created: {
+      from: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() - 1,
+        0
+      ).toLocaleDateString('en-GB'),
+      to: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        0
+      ).toLocaleDateString('en-GB'),
+    },
+    pager: { limit: 64, offset: 0 },
+  }
+) => {
+  if (filters.created) {
+    const createdToDate = new Date(
+      filters.created.to.split('/').reverse().join('-')
+    );
+    filters.created.to = new Date(
+      createdToDate.getFullYear(),
+      createdToDate.getMonth() + 1,
+      0
+    ).toLocaleDateString('en-GB');
+
+    const createdFromDate = new Date(
+      filters.created.from.split('/').reverse().join('-')
+    );
+    filters.created.from = new Date(
+      createdFromDate.getFullYear(),
+      createdFromDate.getMonth() - 6,
+      1
+    ).toLocaleDateString('en-GB');
+  }
+  console.log(filters);
+  return fetchFromApi(
+    'https://kapi.wubook.net/kp/reservations/fetch_reservations',
+    new URLSearchParams({ filters: JSON.stringify(filters) })
+  );
+};
+
+/////////////////////////////////////
 const getCustomerById = async (customerId: string) =>
   fetchFromApi(
     'https://kapi.wubook.net/kp/customers/fetch_one',
@@ -333,7 +354,76 @@ const getReservationsByRoomId = async (
     reservations: sortedReservations,
   };
 };
+//////////////////////////////////////////
+const getReservationsByRoomIdByCreatedTime = async (
+  room_id: string,
+  query: { startDate: string; endDate: string; offset: number }
+) => {
+  const roomRes = await Property.findById(room_id).select('zakRoomId');
 
+  const roomId = roomRes?.zakRoomId;
+  const allRooms = await getAllRooms();
+  const room = allRooms?.data?.find(
+    (room: any) => room.id?.toString() === roomId
+  );
+
+  if (!room) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Room not found');
+  }
+  const finalReservation = [];
+  let offset = query.offset || 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const reservations = await getAllReservationByCreatedTime({
+      created: { from: query.startDate, to: query.endDate },
+      pager: { limit: 64, offset },
+    });
+
+    const allReservations = reservations?.data?.reservations;
+    finalReservation.push(...allReservations);
+
+    if (allReservations.length < 64) {
+      hasMore = false;
+    } else {
+      offset += 64;
+    }
+  }
+
+  const roomReservations = finalReservation?.filter((reservation: any) =>
+    reservation.rooms?.some(
+      (room: any) => room.id_zak_room?.toString() === roomId
+    )
+  );
+  const detailedReservations = await Promise.all(
+    roomReservations?.map(async (reservation: any) => {
+      const [customer, notes] = await Promise.all([
+        getCustomerById(reservation.rooms[0]?.customers[0]?.id),
+        getNotesByRCode(reservation?.id_human),
+      ]);
+
+      return {
+        ...reservation,
+        customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
+
+        customerPhone: customer?.data?.main_info?.phone || 'Unknown',
+        notes: notes?.data,
+      };
+    }) ?? []
+  );
+
+  const sortedReservations = sortReservationsByCreatedBy(
+    detailedReservations,
+    parseInt(roomId!)
+  );
+
+  return {
+    roomName: room.name,
+    room_id: room.id,
+    reservations: sortedReservations,
+  };
+};
+////////////////////////////////////////////
 const createPropertyToDB = async (payload: Partial<TProperty>) => {
   const { owner, zakRoomId } = payload;
   const [isUserExist, allRooms] = await Promise.all([
@@ -374,14 +464,14 @@ const getPropertyByOwnerId = async (id: string) => {
 
   if (user.role == 'admin') {
     const properties = await Property.find({});
-    console.log(properties?.length);
+
     const uniqueProperties = properties.reduce((acc: TProperty[], property) => {
       if (!acc.some((p: any) => p.zakRoomId === property.zakRoomId)) {
         acc.push(property);
       }
       return acc;
     }, []);
-    console.log(uniqueProperties?.length);
+
     return uniqueProperties;
   }
 
@@ -398,5 +488,6 @@ export const PropertyService = {
   getPropertyByIdFromDB,
   getAllRooms,
   getPropertyByOwnerId,
+  getReservationsByRoomIdByCreatedTime,
   getAllProperties,
 };
