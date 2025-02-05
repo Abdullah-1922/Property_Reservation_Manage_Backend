@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import app from './app';
 import config from './config';
 import seedAdmin from './DB';
+import { Server } from 'socket.io';
+import { socketHelper } from './helpers/socketHelper';
 // import { socketHelper } from './helpers/socketHelper';
 // import { errorLogger } from './shared/logger';
 
@@ -30,21 +32,21 @@ async function main() {
       );
     });
 
-    //socket
-    // const io = new Server(server, {
-    //   pingTimeout: 60000,
-    //   cors: {
-    //     origin: '*',
-    //   },
-    // });
-    // socketHelper.socket(io);
-    // //@ts-ignore
-    // global.io = io;
+    // socket
+    const io = new Server(server, {
+      pingTimeout: 60000,
+      cors: {
+        origin: '*',
+      },
+    });
+    socketHelper.socket(io);
+    //@ts-ignore
+    global.io = io;
   } catch (error) {
     console.error(colors.red('🤢 Failed to connect Database'));
   }
 
-  //handle unhandleRejection
+  //handle unhandledRejection
   process.on('unhandledRejection', error => {
     if (server) {
       server.close(() => {

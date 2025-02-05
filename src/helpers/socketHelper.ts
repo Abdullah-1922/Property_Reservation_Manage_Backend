@@ -1,14 +1,20 @@
-import colors from 'colors';
-import { Server } from 'socket.io';
-import { logger } from '../shared/logger';
+import { Server, Socket } from 'socket.io';
+
+// Extend the Socket type to include the emitToUser method
+// declare module 'socket.io' {
+//   interface Socket {
+//     emitToUser(userId: string, event: string, data: any): void;
+//   }
+// }
 
 const socket = (io: Server) => {
-  io.on('connection', socket => {
-    console.log(colors.blue('A user connected'));
+  io.on('connection', (socket: Socket) => {
+    console.log('A user connected');
 
-    //disconnect
+
+    // On disconnect, clean up
     socket.on('disconnect', () => {
-      console.log(colors.red('A user disconnect'));
+      console.log('A user disconnected');
     });
   });
 };

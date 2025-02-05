@@ -9,9 +9,6 @@ import {
   sortReservationsByDates,
 } from './property.utils';
 
-////////////////////////////////
-
-/////////////////////////////////
 const fetchFromApi = async (url: string, body?: URLSearchParams) => {
   console.log(url);
   const response = await fetch(url, {
