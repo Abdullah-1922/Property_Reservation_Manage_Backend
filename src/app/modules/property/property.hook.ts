@@ -57,7 +57,7 @@ export const newReservationAddHook = catchAsync(
     return sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
-      message: 'Reservation added and notifications sent successfully',
+      message: 'Reservation added and notifications triggered',
       data: ownerList,
     });
   }
@@ -65,5 +65,14 @@ export const newReservationAddHook = catchAsync(
 export const reservationStatusChangeHook = catchAsync(
   async (req: Request, res: Response) => {
     console.log(req.body);
+
+    return sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Reservation status changed and notifications triggered',
+      data: null
+    });
+
+
   }
 );
