@@ -1,12 +1,22 @@
-import { TReservation } from "./property.interface";
+import { TReservation } from './property.interface';
 
 export function sortReservationsByDates(
   reservations: TReservation[],
-  targetRoomId: number
+  targetRoomId: number,
+  query: { startDate: string; endDate: string }
 ): TReservation[] {
-  // Filter the reservations to only include those with the target room_id
+  const { startDate, endDate } = query;
+  console.log('query from sort', query);
+  const start = new Date(startDate.split('/').reverse().join('-'));
+  const end = new Date(endDate.split('/').reverse().join('-'));
+
+  // Filter the reservations to only include those with the target room_id and overlapping the date range
   const filteredReservations = reservations.filter(reservation =>
-    reservation.rooms.some(room => room.id_zak_room === targetRoomId)
+    reservation.rooms.some(room => {
+      const dfrom = new Date(room.dfrom.split('/').reverse().join('-'));
+      const dto = new Date(room.dto.split('/').reverse().join('-'));
+      return room.id_zak_room === targetRoomId && dfrom <= end && dto >= start;
+    })
   );
 
   return filteredReservations.sort((a, b) => {
@@ -35,10 +45,6 @@ export function sortReservationsByDates(
     return 0;
   });
 }
-
-
-
-
 
 //sort by created At
 export function sortReservationsByCreatedBy(

@@ -15,7 +15,7 @@ app.use(Morgan.errorHandler);
 //body parser
 app.use(
   cors({
-    origin: ['*'],
+    origin: ['*','https://0faa-115-127-156-9.ngrok-free.app'],
     credentials: true,
   })
 ); 
@@ -38,6 +38,7 @@ app.get('/', (req: Request, res: Response) => {
     '<h1 style="text-align:center; color:#A55FEF; font-family:Verdana;">Hey, How can I assist you today!</h1>'
   );
 });
+
 
 //global error handle
 app.use(globalErrorHandler);

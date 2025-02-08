@@ -9,7 +9,7 @@ import {
   sortReservationsByDates,
 } from './property.utils';
 
-const fetchFromApi = async (url: string, body?: URLSearchParams) => {
+export const fetchFromApi = async (url: string, body?: URLSearchParams) => {
   console.log(url);
   const response = await fetch(url, {
     method: 'POST',
@@ -23,7 +23,7 @@ const fetchFromApi = async (url: string, body?: URLSearchParams) => {
   return response.json();
 };
 
-const getAllRooms = async () => {
+export const getAllRooms = async () => {
   return fetchFromApi('https://kapi.wubook.net/kp/property/fetch_rooms');
 };
 
@@ -66,7 +66,7 @@ const getAllReservations = async (
     );
     filters.departure.to = new Date(
       departureToDate.getFullYear(),
-      departureToDate.getMonth() + 3,
+      departureToDate.getMonth() + 4,
       0
     ).toLocaleDateString('en-GB');
 
@@ -83,7 +83,7 @@ const getAllReservations = async (
     );
     filters.arrival.to = new Date(
       arrivalToDate.getFullYear(),
-      arrivalToDate.getMonth() + 2,
+      arrivalToDate.getMonth() + 1,
       0
     ).toLocaleDateString('en-GB');
 
@@ -92,7 +92,7 @@ const getAllReservations = async (
     );
     filters.arrival.from = new Date(
       arrivalFromDate.getFullYear(),
-      arrivalFromDate.getMonth() - 2,
+      arrivalFromDate.getMonth() - 3,
       0
     ).toLocaleDateString('en-GB');
   }
@@ -151,13 +151,13 @@ const getAllReservationByCreatedTime = async (
 };
 
 /////////////////////////////////////
-const getCustomerById = async (customerId: string) =>
+export const getCustomerById = async (customerId: string) =>
   fetchFromApi(
     'https://kapi.wubook.net/kp/customers/fetch_one',
     new URLSearchParams({ id: customerId })
   );
 
-const getNotesByRCode = async (rcode: string) =>
+export const getNotesByRCode = async (rcode: string) =>
   fetchFromApi(
     'https://kapi.wubook.net/kapi/notes/get_notes',
     new URLSearchParams({ rcode })
@@ -207,7 +207,7 @@ const getReservationsByOwnerId = async (
               ...reservation,
               customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
 
-              customerPhone: customer?.data?.main_info?.phone || 'Unknown',
+              customerPhone: customer?.data?.contacts?.phone || 'Unknown',
               notes: notes?.data,
             };
           }) ?? []
@@ -263,7 +263,7 @@ const getReservationsForAdmin = async (query: {
               ...reservation,
               customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
 
-              customerPhone: customer?.data?.main_info?.phone || 'Unknown',
+              customerPhone: customer?.data?.contacts?.phone || 'Unknown',
               notes: notes?.data,
             };
           }) ?? []
@@ -334,7 +334,7 @@ const getReservationsByRoomId = async (
         ...reservation,
         customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
 
-        customerPhone: customer?.data?.main_info?.phone || 'Unknown',
+        customerPhone: customer?.data?.contacts?.phone || 'Unknown',
         notes: notes?.data,
       };
     }) ?? []
@@ -342,7 +342,8 @@ const getReservationsByRoomId = async (
 
   const sortedReservations = sortReservationsByDates(
     detailedReservations,
-    parseInt(roomId!)
+    parseInt(roomId!),
+    query
   );
 
   return {
@@ -352,7 +353,7 @@ const getReservationsByRoomId = async (
   };
 };
 //////////////////////////////////////////
-const getReservationsByRoomIdByCreatedTime = async (
+export const getReservationsByRoomIdByCreatedTime = async (
   room_id: string,
   query: { startDate: string; endDate: string; offset: number }
 ) => {
@@ -403,7 +404,7 @@ const getReservationsByRoomIdByCreatedTime = async (
         ...reservation,
         customerName: `${customer?.data?.main_info?.name} ${customer?.data?.main_info?.surname}`,
 
-        customerPhone: customer?.data?.main_info?.phone || 'Unknown',
+        customerPhone: customer?.data?.contacts?.phone || 'Unknown',
         notes: notes?.data,
       };
     }) ?? []
