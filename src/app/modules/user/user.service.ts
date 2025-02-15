@@ -43,9 +43,11 @@ const updateProfileToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-
-  
-  if (payload.image && isExistUser.image && !isExistUser.image.includes("default_profile.jpg")) {
+  if (
+    payload.image &&
+    isExistUser.image &&
+    !isExistUser.image.includes('default_profile.jpg')
+  ) {
     unlinkFile(isExistUser.image);
   }
   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
@@ -62,19 +64,29 @@ const getSingleUser = async (id: string): Promise<TUser | null> => {
 
 //get all users
 const getAllUsers = async (): Promise<TUser[]> => {
-  const users = await User.find();
+  const users = await User.find({ isDeleted: false }).select('-password');
   const property = await Property.find();
 
-  const usersWithProperty = users.map((user) => {
+  const usersWithProperty = users.map(user => {
     const userProperties = property
-      .filter((p) => new ObjectId(p.owner).equals(user._id))
-      .map((p) => p.roomName);
+      .filter(p => new ObjectId(p.owner).equals(user._id))
+      .map(p => p.roomName);
     return { ...user.toObject(), property: userProperties };
   });
 
   return usersWithProperty;
 };
 
+const deleteUser = async (id: string): Promise<void> => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+  }
+  if (user.role === 'admin') {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Admin cannot be deleted');
+  }
+  await User.findByIdAndUpdate(id, { isDeleted: true });
+};
 
 export const UserService = {
   getUserProfileFromDB,
@@ -82,4 +94,5 @@ export const UserService = {
   getSingleUser,
   createUserToDB,
   getAllUsers,
+  deleteUser,
 };

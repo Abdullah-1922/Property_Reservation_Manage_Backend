@@ -134,6 +134,18 @@ const getAllRooms = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const removePropertyFromUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await PropertyService.removePropertyFromUser(req.params.ownerId, req.body.zakRoomName);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Property removed successfully',
+      data: result,
+    });
+  }
+);
 
 export const PropertyController = {
   createProperty,
@@ -144,5 +156,6 @@ export const PropertyController = {
   getReservationsForAdmin,
   getReservationsByRoomId,
   getAllRooms,
-  getReservationsByRoomIdByCreatedTime
+  getReservationsByRoomIdByCreatedTime,
+  removePropertyFromUser
 };

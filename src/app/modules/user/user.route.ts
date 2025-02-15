@@ -43,5 +43,10 @@ router.put(
     return UserController.updateProfile(req, res, next);
   }
 );
+router.delete(
+  '/delete-user/:id',
+  auth(USER_ROLES.ADMIN),
+  UserController.deleteUser
+);
 
 export const UserRoutes = router;

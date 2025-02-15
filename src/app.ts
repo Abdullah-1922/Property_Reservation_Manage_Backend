@@ -4,7 +4,12 @@ import { StatusCodes } from 'http-status-codes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './routes';
 import { Morgan } from './shared/morgen';
-import { newReservationAddHook, reservationStatusChangeHook } from './app/modules/property/property.hook';
+import {
+  newReservationAddHook,
+  reservationStatusChangeHook,
+} from './app/modules/property/property.hook';
+import admin from 'firebase-admin';
+import ServiceAccount from '../gestion-admin.json';
 
 const app = express();
 
@@ -12,13 +17,17 @@ const app = express();
 app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
 
+admin.initializeApp({
+  credential: admin.credential.cert(ServiceAccount as admin.ServiceAccount),
+});
+
 //body parser
 app.use(
   cors({
-    origin: ['*','https://0faa-115-127-156-9.ngrok-free.app'],
+    origin: ['*', 'https://0faa-115-127-156-9.ngrok-free.app'],
     credentials: true,
   })
-); 
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,10 +36,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('uploads'));
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 //router
-app.use("/api/v1/new-reservation-added-hook",newReservationAddHook)
-app.use("/api/v1/reservation-status-change-hook",reservationStatusChangeHook)
+app.use('/api/v1/new-reservation-added-hook', newReservationAddHook);
+app.use('/api/v1/reservation-status-change-hook', reservationStatusChangeHook);
 app.use('/api/v1', router);
-
 
 //live response
 app.get('/', (req: Request, res: Response) => {
@@ -38,7 +46,6 @@ app.get('/', (req: Request, res: Response) => {
     '<h1 style="text-align:center; color:#A55FEF; font-family:Verdana;">Hey, How can I assist you today!</h1>'
   );
 });
-
 
 //global error handle
 app.use(globalErrorHandler);

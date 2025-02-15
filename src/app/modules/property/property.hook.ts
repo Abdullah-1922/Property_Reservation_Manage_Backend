@@ -4,6 +4,8 @@ import sendResponse from '../../../shared/sendResponse';
 import { StatusCodes } from 'http-status-codes';
 import Property from './property.model';
 import { fetchFromApi, getCustomerById } from './property.service';
+import { User } from '../user/user.model';
+import * as admin from 'firebase-admin';
 
 export const newReservationAddHook = catchAsync(
   async (req: Request, res: Response) => {
@@ -30,28 +32,6 @@ export const newReservationAddHook = catchAsync(
       'https://kapi.wubook.net/kp/reservations/fetch_one_reservation',
       new URLSearchParams({ id: reservationId })
     );
-
-
-    const  customerInfo =await getCustomerById(selectedReservation?.data?.rooms.find(
-      (room: any) => room.id_zak_room.toString() === zakRoomId
-    ).customers[0].id)
-    console.log( 'kakakakak',selectedReservation?.data?.rooms.find(
-      (room: any) => room.id_zak_room.toString() === zakRoomId
-    ));
-    console.log(selectedReservation?.data?.rooms.find(
-      (room: any) => room.id_zak_room.toString() === zakRoomId
-    ).customers[0].id);
-
-
-
-
- 
-
-
- console.log(customerInfo);
-
-
-  
     // console.dir(selectedReservation,{depth:Infinity});
     if (!selectedReservation) {
       return sendResponse(res, {
@@ -62,7 +42,7 @@ export const newReservationAddHook = catchAsync(
     }
     const data = {
       zakRoomId: zakRoomId,
-      title: `${property.roomName} - New Reservation Have Been Added`,
+      title: `🛎️ ${property.roomName} - New Reservation Have Been Added`,
       from: selectedReservation?.data?.rooms.find(
         (room: any) => room.id_zak_room.toString() === zakRoomId
       )?.dfrom,
@@ -75,6 +55,7 @@ export const newReservationAddHook = catchAsync(
     const ownerList = await Property.find({
       zakRoomId: data.zakRoomId,
     }).select('owner');
+
     // If no owners are found, return a 404 response
     if (ownerList.length === 0) {
       return sendResponse(res, {
@@ -86,13 +67,28 @@ export const newReservationAddHook = catchAsync(
     //@ts-ignore
     // Emit the event to all owners
     const socketIo = global.io;
-    ownerList.forEach(owner => {
-      if (owner && owner.owner) {
+    ownerList.forEach(async owner => {
+      const fcm = await User.findById(owner.owner).select('fcmToken');
+
+      if (owner && owner.owner && fcm?.fcmToken) {
         try {
           // Emit to the user's socket
-          socketIo.emit(`new-reservation-added:${owner.owner.toString()}`, {
-            data,
-          });
+          // socketIo.emit(`new-reservation-added:${owner.owner.toString()}`, {
+          //   data,
+          // });
+
+          const message = {
+            token: fcm?.fcmToken, // Device FCM Token
+            notification: {
+              title: data.title,
+              body: `${property.roomName} is booked From: ${data.from} To: ${data.to} Total: ${data.total}`,
+            },
+            data: {
+              extraData: 'Custom Data For User',
+            },
+          };
+
+          const response = await admin.messaging().send(message);
         } catch (error) {
           console.error(`Error emitting to user ${owner.owner}:`, error);
         }
@@ -100,13 +96,12 @@ export const newReservationAddHook = catchAsync(
         console.error(`Invalid owner socket ID for owner ${owner.owner}.`);
       }
     });
-
+  
     // Send success response
     return sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
       message: 'Reservation added and notifications triggered',
-      data: ownerList,
     });
   }
 );
@@ -135,7 +130,6 @@ export const reservationStatusChangeHook = catchAsync(
         message: 'Property not found',
       });
     }
-
     const reservationDetails = await fetchFromApi(
       'https://kapi.wubook.net/kp/reservations/fetch_one_reservation',
       new URLSearchParams({ id: reservationId })
@@ -148,7 +142,6 @@ export const reservationStatusChangeHook = catchAsync(
         message: 'Reservation not found',
       });
     }
-
     const formattedData = {
       zakRoomId: zakRoomId,
       title: `${property.roomName} - Reservation Status Changed`,
@@ -168,17 +161,30 @@ export const reservationStatusChangeHook = catchAsync(
         message: 'No owners found for the specified room ID',
       });
     }
-
     //@ts-ignore
     // Emit the event to all owners
     const socketIo = global.io;
-    ownerList.forEach(owner => {
-      if (owner && owner.owner) {
+    ownerList.forEach(async owner => {
+      const fcm = await User.findById(owner.owner).select('fcmToken');
+      if (owner && owner.owner && fcm?.fcmToken) {
         try {
           // Emit to the user's socket
-          socketIo.emit(`reservation-status-change:${owner.owner.toString()}`, {
-            formattedData,
-          });
+          // socketIo.emit(`reservation-status-change:${owner.owner.toString()}`, {
+          //   formattedData,
+          // });
+
+          const message = {
+            token: fcm?.fcmToken, // Device FCM Token
+            notification: {
+              title: formattedData.title,
+              body: formattedData.details,
+            },
+            data: {
+              extraData: 'Custom Data For User',
+            },
+          };
+
+          const response = await admin.messaging().send(message);
         } catch (error) {
           console.error(`Error emitting to user ${owner.owner}:`, error);
         }
@@ -186,7 +192,6 @@ export const reservationStatusChangeHook = catchAsync(
         console.error(`Invalid owner socket ID for owner ${owner.owner}.`);
       }
     });
-
     return sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,

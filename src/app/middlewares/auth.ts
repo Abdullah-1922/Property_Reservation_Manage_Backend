@@ -4,6 +4,7 @@ import { Secret } from 'jsonwebtoken';
 import config from '../../config';
 import ApiError from '../../errors/ApiError';
 import { jwtHelper } from '../../helpers/jwtHelper';
+import { User } from '../modules/user/user.model';
 
 const auth =
   (...roles: string[]) =>
@@ -11,10 +12,10 @@ const auth =
     try {
       const tokenWithBearer = req.headers.authorization;
       if (!tokenWithBearer) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
+        throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized ');
       }
 
-     console.log(tokenWithBearer);
+      console.log(tokenWithBearer);
       if (tokenWithBearer && tokenWithBearer.startsWith('Bearer')) {
         const token = tokenWithBearer.split(' ')[1];
 
@@ -25,7 +26,13 @@ const auth =
         );
         //set user to header
         req.user = verifyUser;
-       
+        const userDetails = await User.findById(verifyUser.id);
+        if (!userDetails) {
+          throw new ApiError(StatusCodes.UNAUTHORIZED, 'User not found');
+        }
+        if (userDetails.isDeleted) {
+          throw new ApiError(StatusCodes.UNAUTHORIZED, 'User is deleted');
+        }
         //guard user
         if (roles.length && !roles.includes(verifyUser.role)) {
           throw new ApiError(

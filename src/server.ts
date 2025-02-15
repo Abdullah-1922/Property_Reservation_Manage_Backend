@@ -6,13 +6,12 @@ import config from './config';
 import seedAdmin from './DB';
 import { Server } from 'socket.io';
 import { socketHelper } from './helpers/socketHelper';
-// import { socketHelper } from './helpers/socketHelper';
-// import { errorLogger } from './shared/logger';
+
 
 //uncaught exception
 process.on('uncaughtException', error => {
-  // errorLogger.error('UnhandleException Detected', error);
-  console.log('UnhandleException Detected', error);
+  // errorLogger.error('UnhandledException Detected', error);
+  console.log('UnhandledException Detected', error);
   process.exit(1);
 });
 
@@ -50,7 +49,7 @@ async function main() {
   process.on('unhandledRejection', error => {
     if (server) {
       server.close(() => {
-     console.error('UnhandleRejection Detected', error);
+     console.error('UnhandledRejection Detected', error);
         process.exit(1);
       });
     } else {

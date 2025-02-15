@@ -20,7 +20,7 @@ import { ResetToken } from '../resetToken/resetToken.model';
 //login
 const loginUserFromDB = async (payload: Partial<ILoginData>) => {
   const { email, password } = payload;
- console.log(payload);
+  console.log(payload);
   if (!password) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is required');
   }

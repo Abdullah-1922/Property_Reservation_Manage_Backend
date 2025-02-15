@@ -43,4 +43,11 @@ router.get(
 router.get('/zak-rooms', PropertyController.getAllRooms);
 router.get('/:id', auth(USER_ROLES.ADMIN), PropertyController.getPropertyById);
 
+
+
+router.delete(
+  '/remove-property/:ownerId',
+  auth(USER_ROLES.ADMIN),
+  PropertyController.removePropertyFromUser
+);
 export const PropertyRoutes = router;

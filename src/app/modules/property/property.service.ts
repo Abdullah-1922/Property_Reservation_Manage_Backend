@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../../errors/ApiError';
 import Property from './property.model';
 import config from '../../../config';
-import { TProperty, TReservation } from './property.interface';
+import { TProperty } from './property.interface';
 import { User } from '../user/user.model';
 import {
   sortReservationsByCreatedBy,
@@ -188,7 +188,6 @@ const getReservationsByOwnerId = async (
       propertyWithRoomIds.includes(room.id_zak_room?.toString())
     )
   );
-
   return Promise.all(
     properties.map(async property => {
       const roomReservations = await Promise.all(
@@ -478,6 +477,16 @@ const getPropertyByOwnerId = async (id: string) => {
 
 const getAllProperties = async () => Property.find().populate('owner');
 
+const removePropertyFromUser = async (owner: string, zakRoomName: string) => {
+  if (!owner || !zakRoomName) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Owner or zakRoomName is missing'
+    );
+  }
+  return Property.findOneAndDelete({ owner, roomName: zakRoomName });
+};
+
 export const PropertyService = {
   getReservationsByOwnerId,
   getReservationsForAdmin,
@@ -488,4 +497,5 @@ export const PropertyService = {
   getPropertyByOwnerId,
   getReservationsByRoomIdByCreatedTime,
   getAllProperties,
+  removePropertyFromUser,
 };

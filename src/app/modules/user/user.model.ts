@@ -38,6 +38,10 @@ const userSchema = new Schema<TUser, UserModal>(
       select: 0,
       minlength: 8,
     },
+    fcmToken:{
+      type: String,
+      default: null
+    },
     authentication: {
       type: {
         isResetPassword: {
