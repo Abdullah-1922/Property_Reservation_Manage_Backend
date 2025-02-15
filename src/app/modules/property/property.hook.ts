@@ -177,6 +177,10 @@ export const reservationStatusChangeHook = catchAsync(
           // socketIo.emit(`reservation-status-change:${owner.owner.toString()}`, {
           //   formattedData,
           // });
+          if(fcm?.fcmToken === null || fcm?.fcmToken === 'kafikafi1922@gmail.com'){
+            console.log('fcm token is null');
+            return;
+          }
 
           const message = {
             token: fcm?.fcmToken, // Device FCM Token
