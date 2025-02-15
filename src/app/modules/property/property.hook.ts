@@ -68,17 +68,22 @@ export const newReservationAddHook = catchAsync(
     // Emit the event to all owners
     const socketIo = global.io;
     ownerList.forEach(async owner => {
+      
       const fcm = await User.findById(owner.owner).select('fcmToken');
-
-      if (owner && owner.owner && fcm?.fcmToken) {
+      if (owner && owner.owner && (fcm?.fcmToken !== null)) {
         try {
           // Emit to the user's socket
           // socketIo.emit(`new-reservation-added:${owner.owner.toString()}`, {
           //   data,
-          // });
+          // }); 
+          if(fcm?.fcmToken === null || fcm?.fcmToken === 'kafikafi1922@gmail.com'){
+            console.log('fcm token is null');
+            return;
+          }
+
 
           const message = {
-            token: fcm?.fcmToken, // Device FCM Token
+            token: fcm?.fcmToken!, // Device FCM Token
             notification: {
               title: data.title,
               body: `${property.roomName} is booked From: ${data.from} To: ${data.to} Total: ${data.total}`,
