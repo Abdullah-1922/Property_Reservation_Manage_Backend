@@ -24,7 +24,7 @@ admin.initializeApp({
 //body parser
 app.use(
   cors({
-    origin: ['*', 'https://0faa-115-127-156-9.ngrok-free.app'],
+    origin: ['*', 'https://0faa-115-127-156-9.ngrok-free.app','https://0765-115-127-156-9.ngrok-free.app'],
     credentials: true,
   })
 );
@@ -36,8 +36,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('uploads'));
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 //router
-app.use('/api/v1/new-reservation-added-hook', newReservationAddHook);
-app.use('/api/v1/reservation-status-change-hook', reservationStatusChangeHook);
+app.post('/api/v1/new-reservation-added-hook', newReservationAddHook);
+app.post('/api/v1/reservation-status-change-hook', reservationStatusChangeHook);
 app.use('/api/v1', router);
 
 //live response
