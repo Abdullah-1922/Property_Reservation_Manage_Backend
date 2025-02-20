@@ -7,7 +7,6 @@ import seedAdmin from './DB';
 import { Server } from 'socket.io';
 import { socketHelper } from './helpers/socketHelper';
 
-
 //uncaught exception
 process.on('uncaughtException', error => {
   // errorLogger.error('UnhandledException Detected', error);
@@ -15,14 +14,16 @@ process.on('uncaughtException', error => {
   process.exit(1);
 });
 
+
 let server: any;
 async function main() {
   try {
-    
-    mongoose.connect(config.database_url as string,{
-      serverSelectionTimeoutMS: 30000, // Increase to 30 seconds
-      connectTimeoutMS: 30000, // Increase to 30 seconds
+    await  mongoose.connect(config.database_url as string, {
+
+      serverSelectionTimeoutMS: 60000, // Increase to 30 seconds
+      connectTimeoutMS: 60000, // Increase to 30 seconds
     });
+    seedAdmin();
     console.log(colors.green('🚀 Database connected successfully'));
 
     const port =
@@ -34,10 +35,7 @@ async function main() {
       );
     });
 
-    if(server){
-      seedAdmin();
-    }
-
+   
     // socket
     const io = new Server(server, {
       pingTimeout: 60000,
@@ -56,7 +54,7 @@ async function main() {
   process.on('unhandledRejection', error => {
     if (server) {
       server.close(() => {
-     console.error('UnhandledRejection Detected', error);
+        console.error('UnhandledRejection Detected', error);
         process.exit(1);
       });
     } else {
