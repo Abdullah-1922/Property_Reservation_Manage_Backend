@@ -19,9 +19,9 @@ let server: any;
 async function main() {
   try {
     console.log("config.database_url",config.database_url);
-    const dbCon= await  mongoose.connect(config.database_url as string);
-    console.log(dbCon);
-   await seedAdmin();
+     await mongoose.connect(config.database_url as string);
+  
+    seedAdmin();
     console.log(colors.green('🚀 Database connected successfully'));
 
     const port =
