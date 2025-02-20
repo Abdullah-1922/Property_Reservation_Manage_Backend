@@ -20,7 +20,10 @@ async function main() {
   try {
     console.log("config.database_url",config.database_url);
     const dbCon= await  mongoose.connect(config.database_url as string, {
-    });
+
+      useNewUrlParser: true,
+      useUnifiedTopology: true,  
+      });
     console.log(dbCon);
    await seedAdmin();
     console.log(colors.green('🚀 Database connected successfully'));
