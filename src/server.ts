@@ -18,10 +18,8 @@ process.on('uncaughtException', error => {
 let server: any;
 async function main() {
   try {
-    await  mongoose.connect(config.database_url as string, {
-
-      serverSelectionTimeoutMS: 60000, // Increase to 30 seconds
-      connectTimeoutMS: 60000, // Increase to 30 seconds
+    console.log("config.database_url",config.database_url);
+     await  mongoose.connect(config.database_url as string, {
     });
    await seedAdmin();
     console.log(colors.green('🚀 Database connected successfully'));
