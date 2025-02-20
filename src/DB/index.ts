@@ -6,10 +6,9 @@ import { USER_ROLES } from '../enums/user';
 
 const superUser = {
   name: 'Abdullah Al Kafi',
-
   role: USER_ROLES.ADMIN,
-  email: config.admin.email,
-  password: config.admin.password,
+  email: process.env.ADMIN_EMAIL || config.admin.email,
+  password: process.env.ADMIN_PASSWORD || config.admin.password,
   address: 'Dhaka, Bangladesh',
   phone: '01711111111',
   image: 'https://i.ibb.co.com/2sw32KM/user.png',

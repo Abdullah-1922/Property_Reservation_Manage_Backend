@@ -24,7 +24,7 @@ admin.initializeApp({
 //body parser
 app.use(
   cors({
-    origin: ['*', 'https://0faa-115-127-156-9.ngrok-free.app','https://0765-115-127-156-9.ngrok-free.app'],
+    origin: '*',
     credentials: true,
   })
 );

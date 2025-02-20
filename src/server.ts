@@ -18,7 +18,7 @@ process.on('uncaughtException', error => {
 let server: any;
 async function main() {
   try {
-    seedAdmin();
+    
     mongoose.connect(config.database_url as string,{
       serverSelectionTimeoutMS: 30000, // Increase to 30 seconds
       connectTimeoutMS: 30000, // Increase to 30 seconds
@@ -33,6 +33,10 @@ async function main() {
         colors.yellow(`♻️  Application listening on port:${config.port}`)
       );
     });
+
+    if(server){
+      seedAdmin();
+    }
 
     // socket
     const io = new Server(server, {
