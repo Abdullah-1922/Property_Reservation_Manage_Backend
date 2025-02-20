@@ -23,7 +23,7 @@ async function main() {
       serverSelectionTimeoutMS: 60000, // Increase to 30 seconds
       connectTimeoutMS: 60000, // Increase to 30 seconds
     });
-    seedAdmin();
+   await seedAdmin();
     console.log(colors.green('🚀 Database connected successfully'));
 
     const port =
