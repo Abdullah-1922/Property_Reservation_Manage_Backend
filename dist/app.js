@@ -9,13 +9,19 @@ const http_status_codes_1 = require("http-status-codes");
 const globalErrorHandler_1 = __importDefault(require("./app/middlewares/globalErrorHandler"));
 const routes_1 = __importDefault(require("./routes"));
 const morgen_1 = require("./shared/morgen");
+const property_hook_1 = require("./app/modules/property/property.hook");
+const firebase_admin_1 = __importDefault(require("firebase-admin"));
+const gestion_admin_json_1 = __importDefault(require("../gestion-admin.json"));
 const app = (0, express_1.default)();
 //morgan
 app.use(morgen_1.Morgan.successHandler);
 app.use(morgen_1.Morgan.errorHandler);
+firebase_admin_1.default.initializeApp({
+    credential: firebase_admin_1.default.credential.cert(gestion_admin_json_1.default),
+});
 //body parser
 app.use((0, cors_1.default)({
-    origin: ['*'],
+    origin: ['*', 'https://0faa-115-127-156-9.ngrok-free.app', 'https://0765-115-127-156-9.ngrok-free.app'],
     credentials: true,
 }));
 app.use(express_1.default.json());
@@ -24,6 +30,8 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.static('uploads'));
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 //router
+app.post('/api/v1/new-reservation-added-hook', property_hook_1.newReservationAddHook);
+app.post('/api/v1/reservation-status-change-hook', property_hook_1.reservationStatusChangeHook);
 app.use('/api/v1', routes_1.default);
 //live response
 app.get('/', (req, res) => {

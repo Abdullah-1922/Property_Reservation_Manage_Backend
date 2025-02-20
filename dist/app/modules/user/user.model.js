@@ -32,6 +32,7 @@ const userSchema = new mongoose_1.Schema({
     },
     image: {
         type: String,
+        default: '/images/default_profile/default_profile.jpg',
     },
     email: {
         type: String,
@@ -47,6 +48,10 @@ const userSchema = new mongoose_1.Schema({
         required: true,
         select: 0,
         minlength: 8,
+    },
+    fcmToken: {
+        type: String,
+        default: null
     },
     authentication: {
         type: {

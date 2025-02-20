@@ -19,7 +19,10 @@ let server: any;
 async function main() {
   try {
     seedAdmin();
-    mongoose.connect(config.database_url as string);
+    mongoose.connect(config.database_url as string,{
+      serverSelectionTimeoutMS: 30000, // Increase to 30 seconds
+      connectTimeoutMS: 30000, // Increase to 30 seconds
+    });
     console.log(colors.green('🚀 Database connected successfully'));
 
     const port =

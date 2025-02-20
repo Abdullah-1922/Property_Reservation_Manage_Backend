@@ -13,7 +13,6 @@ exports.default = {
     port: process.env.PORT,
     bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
     stripe_api_secret: process.env.STRIPE_SECRET_KEY,
-    google_maps: process.env.GOOGLE_MAPS,
     jwt: {
         jwt_secret: process.env.JWT_SECRET,
         jwt_expire_in: process.env.JWT_EXPIRE_IN,
@@ -35,5 +34,5 @@ exports.default = {
         email: process.env.ADMIN_EMAIL,
         password: process.env.ADMIN_PASSWORD,
     },
-    we_book_api_key: process.env.WE_BOOK_API_KEY,
+    we_book_api_key: process.env.We_BOOK_API_KEY,
 };

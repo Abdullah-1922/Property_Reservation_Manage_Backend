@@ -31,5 +31,5 @@ export default {
     email: process.env.ADMIN_EMAIL,
     password: process.env.ADMIN_PASSWORD,
   },
-  we_book_api_key: process.env.WE_BOOK_API_KEY,
+  we_book_api_key: process.env.We_BOOK_API_KEY,
 };

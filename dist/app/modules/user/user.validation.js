@@ -14,6 +14,7 @@ const updateZodSchema = zod_1.z.object({
     name: zod_1.z.string().optional(),
     image: zod_1.z.string().optional(),
     password: zod_1.z.string().optional(),
+    phone: zod_1.z.string().optional(),
 });
 exports.UserValidation = {
     createUserZodSchema,

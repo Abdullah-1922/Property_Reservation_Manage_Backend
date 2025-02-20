@@ -87,6 +87,7 @@ const forgetPasswordToDB = (email) => __awaiter(void 0, void 0, void 0, function
 //verify email
 const verifyEmailToDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
+    console.log(payload);
     const { email, oneTimeCode } = payload;
     const isExistUser = yield user_model_1.User.findOne({ email }).select('+authentication');
     if (!isExistUser) {

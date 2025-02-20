@@ -27,7 +27,7 @@ const transporter = nodemailer_1.default.createTransport({
 const sendEmail = (values) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const info = yield transporter.sendMail({
-            from: `"MON_CPOSOMT" ${config_1.default.email.from}`,
+            from: `"gestionvv(Hernandez)" ${config_1.default.email.from}`,
             to: values.to,
             subject: values.subject,
             html: values.html,

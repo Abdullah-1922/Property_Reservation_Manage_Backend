@@ -95,6 +95,38 @@ const getReservationsByRoomId = (0, catchAsync_1.default)((req, res) => __awaite
         data: result,
     });
 }));
+const getReservationsByRoomIdByCreatedTime = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = {
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        offset: Number(req.query.offset),
+    };
+    const result = yield property_service_1.PropertyService.getReservationsByRoomIdByCreatedTime(req.params.roomId, query);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: 'Reservations retrieved successfully (by created time)',
+        data: result,
+    });
+}));
+const getAllRooms = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield property_service_1.PropertyService.getAllRooms();
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: 'Rooms from zak retrieved successfully',
+        data: result,
+    });
+}));
+const removePropertyFromUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield property_service_1.PropertyService.removePropertyFromUser(req.params.ownerId, req.body.zakRoomName);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: 'Property removed successfully',
+        data: result,
+    });
+}));
 exports.PropertyController = {
     createProperty,
     getPropertyById,
@@ -102,5 +134,8 @@ exports.PropertyController = {
     getAllProperties,
     getReservationsByOwnerId,
     getReservationsForAdmin,
-    getReservationsByRoomId
+    getReservationsByRoomId,
+    getAllRooms,
+    getReservationsByRoomIdByCreatedTime,
+    removePropertyFromUser
 };

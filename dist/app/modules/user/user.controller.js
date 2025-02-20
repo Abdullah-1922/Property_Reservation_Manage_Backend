@@ -71,10 +71,19 @@ const getAllUsers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: result,
     });
 }));
+const deleteUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield user_service_1.UserService.deleteUser(req.params.id);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: 'User deleted successfully',
+    });
+}));
 exports.UserController = {
     createUser,
     getUserProfile,
     updateProfile,
     getSingleUser,
     getAllUsers,
+    deleteUser
 };
