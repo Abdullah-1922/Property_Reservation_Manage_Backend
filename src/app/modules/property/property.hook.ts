@@ -10,13 +10,13 @@ import * as admin from 'firebase-admin';
 export const newReservationAddHook = catchAsync(
   async (req: Request, res: Response) => {
     console.log('req body from real data', req.body);
-    // const reqData = req.body;
-    const reqData = {
-      property: '183308',
-      event: 'new_reservation',
-      url: 'http://115.127.156.13:5002/api/v1/new-reservation-added-hook',
-      push_data: '{"reservation": 17024718}',
-    };
+    const reqData = req.body;
+    // const reqData = {
+    //   property: '183308',
+    //   event: 'new_reservation',
+    //   url: 'http://115.127.156.13:5002/api/v1/new-reservation-added-hook',
+    //   push_data: '{"reservation": 17024718}',
+    // };
 
     console.log(reqData);
     const pushData = JSON.parse(reqData.push_data);
@@ -52,7 +52,7 @@ export const newReservationAddHook = catchAsync(
       }
       const formattedData = {
         zakRoomId: zakRoomId,
-        title: `🛎️ ${ property.roomName} - New Reservation Have Been Added`,
+        title: `🛎️ ${property.roomName} - New Reservation Have Been Added`,
         from: room.dfrom,
         to: room.dto,
         total: reservationDetails?.data?.price.total,
@@ -114,22 +114,20 @@ export const newReservationAddHook = catchAsync(
       message: 'Reservation status changed and notifications triggered',
       data: null,
     });
-
-   
   }
 );
 
 export const reservationStatusChangeHook = catchAsync(
   async (req: Request, res: Response) => {
     console.log(req.body);
-    const data = {
-      property: '183308',
-      event: 'change_status',
-      url: 'http://115.127.156.13:5002/api/v1/new-reservation-added-hook',
-      push_data:
-        '{"reservation": 21306358,"old_status": "confirmed","new_status": "cancelled"}',
-    };
-    // const data = req.body;
+    // const data = {
+    //   property: '183308',
+    //   event: 'change_status',
+    //   url: 'http://115.127.156.13:5002/api/v1/new-reservation-added-hook',
+    //   push_data:
+    //     '{"reservation": 21306358,"old_status": "confirmed","new_status": "cancelled"}',
+    // };
+    const data = req.body;
     console.log(data);
     const pushData = JSON.parse(data.push_data);
     //  console.log(pushData);
@@ -227,5 +225,3 @@ export const reservationStatusChangeHook = catchAsync(
     });
   }
 );
-
-
